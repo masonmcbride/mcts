@@ -3,10 +3,11 @@ from collections import defaultdict
 
 class MonteCarloTreeSearchNode():
 
-    def __init__(self, state, parent=None):
+    def __init__(self, state, parent=None, action_taken=None):
         """
         state : 3x3 np array that holds board state
         parent : parent node 
+        action_taken : stores the Action object taken to get to that node
         children : list of children, initially empty
         
         q = returns value of node
@@ -17,6 +18,7 @@ class MonteCarloTreeSearchNode():
         """
         self.state = state
         self.parent = parent
+        self.action_taken = action_taken
         self.children = []
         self._number_of_visits = 0
         self._results = defaultdict(int)
@@ -24,11 +26,7 @@ class MonteCarloTreeSearchNode():
         self._weights = None
 
     def __str__(self):
-        return f"MCTS Search Node\n \
-n: {self.n}\n \
-pi: \n{self.dist}\n \
-state: \n{self.state} \
-        "
+        return f"MCTS Search Node\nn: {self.n}\npi: \n{self.dist}\nstate:\n{self.state}"
 
     @property
     def untried_actions(self):
@@ -53,13 +51,20 @@ state: \n{self.state} \
 
     @property
     def dist(self):
-        pi = np.zeros((3,3))
-        return pi
+        if self.parent._weights is not None:
+            out = np.zeros((3,3))
+            pi = MonteCarloTreeSearchNode.normalize([c.n for c in self.parent.children])
+            for prob, child in zip(pi, self.parent.children):
+                a = child.action_taken
+                out[a.row][a.col] = prob
+            return np.round(out, 3)
+        else:
+            return None
 
     def expand(self):
         action = self.untried_actions.pop()
         next_state = self.state.move(action)
-        child_node = MonteCarloTreeSearchNode(next_state, parent = self)
+        child_node = MonteCarloTreeSearchNode(next_state, parent = self, action_taken = action)
         self.children.append(child_node)
         return child_node
 
@@ -86,12 +91,18 @@ state: \n{self.state} \
     def is_fully_expanded(self):
         return len(self.untried_actions) == 0
 
-    def best_child(self, c_param=1.4):
+    def best_child(self, c_param = 1.4):
         self._weights = [
                 (c.q / c.n) + c_param * np.sqrt((2 * np.log(self.n) / c.n)) 
                 for c in self.children]
         return self.children[np.argmax(self._weights)]
 
     def rollout_policy(self, possible_moves):        
-        #roll out policy is 
+        #roll out policy is random moves
         return possible_moves[np.random.randint(len(possible_moves))]
+
+    @staticmethod
+    def normalize(array):
+        norm = sum(array)
+        normalized = np.array(array)/norm
+        return normalized

@@ -5,8 +5,8 @@ from mcts_search import *
 
 reset_state = np.zeros((3, 3))
 state = np.array([
-        [1,0,-1],
-        [1,0,0],
+        [1,1,-1],
+        [1,-1,-1],
         [0,-1,0]])
 initial_board_state = TicTacToeGameState(state=state, next_to_move=1)
 
