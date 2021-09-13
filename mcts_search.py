@@ -9,7 +9,11 @@ class MCTS:
             v.backpropagate(reward)
 
         best = self.node_pointer.best_child(c_param=0.)
+        #new addition: this is a crude pure strategy detector
+        #if it is a pure strategy, prune tree by skipping node
         if best.n / simulations_number >= .99:
+            best.parent = self.node_pointer.parent if self.node_pointer.parent else None
+            self.node_pointer = best
             print(f"pure strategy with {best.n / simulations_number}")
         return best
 

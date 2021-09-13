@@ -51,7 +51,7 @@ class MonteCarloTreeSearchNode():
 
     @property
     def dist(self):
-        if self.parent._weights is not None:
+        if self.parent is not None and self.parent._weights is not None:
             out = np.zeros((3,3))
             pi = MonteCarloTreeSearchNode.normalize([c.n for c in self.parent.children])
             for prob, child in zip(pi, self.parent.children):
