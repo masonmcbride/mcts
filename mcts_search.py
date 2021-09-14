@@ -1,20 +1,11 @@
 class MCTS:
     def __init__(self, node):
+        #I'm just pointing to a node now
         self.node_pointer = node
 
-    def best_action(self, simulations_number):
-        for _ in range(0, simulations_number):
-            v = self._tree_policy()
-            reward = v.rollout()
-            v.backpropagate(reward)
-
-        best = self.node_pointer.best_child(c_param=0.)
-        #new addition: this is a crude pure strategy detector
-        #if it is a pure strategy, prune tree by skipping node
-        if best.n / simulations_number >= .99:
-            best.parent = self.node_pointer.parent if self.node_pointer.parent else None
-            self.node_pointer = best
-            print(f"pure strategy with {best.n / simulations_number}")
+    def best_action(self, num_simulations):
+        self.search(num_simulations)
+        best: MonteCarloTreeSearchNode = self.node_pointer.best_child(c_param=0.)
         return best
 
     def _tree_policy(self):
@@ -26,3 +17,24 @@ class MCTS:
                 current_node = current_node.best_child()
 
         return current_node
+
+    def run(self):
+        v = self._tree_policy()
+        reward = v.rollout()
+        v.backpropagate(reward)
+
+    def search(self, num_simulations):
+        for _ in range(num_simulations):
+            self.run()
+
+
+""""
+if best.n / simulations_number >= .99:
+    best.parent = self.node_pointer.parent if self.node_pointer.parent else None
+    self.node_pointer = best
+    print(f"pure strategy with {best.n / simulations_number}")
+
+new addition: this is a crude pure strategy detector
+if it is a pure strategy, prune tree by skipping node
+TODO Is it possible for the tree to be fine with multiple players being on the same depth n of the node?
+    """

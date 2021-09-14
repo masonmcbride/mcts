@@ -21,7 +21,7 @@ class TicTacToeGameState():
         self.next_to_move = next_to_move
 
     def __repr__(self):
-        return f"{self.board}"
+        return f"next to move: {self.next_to_move}\n{self.board}"
 
     def game_result(self):
         """

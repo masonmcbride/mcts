@@ -20,6 +20,7 @@ class MonteCarloTreeSearchNode():
         self.parent = parent
         self.action_taken = action_taken
         self.children = []
+
         self._number_of_visits = 0
         self._results = defaultdict(int)
         self._untried_actions = None
