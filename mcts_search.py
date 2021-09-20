@@ -2,9 +2,11 @@ class MCTS:
     def __init__(self, node):
         #I'm just pointing to a node now
         self.node_pointer: MonteCarloTreeSearchNode = node
+        self.debug_nodes: List[MonteCarloTreeSerchNode] = []
 
     #returns MonteCarloTreeSearchNode with highest Q value. 
     def best_action(self, num_simulations):
+        #search, find best child, then think then return best child
         self.search(num_simulations)
         best: MonteCarloTreeSearchNode = self.node_pointer.best_child(c_param=0.)
         return best
@@ -20,6 +22,12 @@ class MCTS:
 
         return current_node
 
+    def train(self, num_iterations):
+        for _ in range(num_iterations):
+            self.search(num_simulations)
+            best: MonteCarloTreeSearchNode = self.node_pointer.best_child(c_param=0.)
+            self.think(best)
+
     #rollout and backprop of mcts. This is one iteration of the algorithm
     def run(self):
         v = self._tree_policy()
@@ -32,8 +40,16 @@ class MCTS:
             self.run()
 
     #this function should process each node to prune and abstract if possible
-    def think(self):
-        pass
+    def think(self, best, epsilon=0.01):
+        if best.is_terminal_state() or (self.node_pointer.n - best.n) / num_simulations < epsilon:
+            best.parent = self.node_pointer.parent if self.node_pointer.parent else None
+            self.node_pointer = best
+            #debug
+            self.debug_nodes.append(best)
+            print("pruned")
+                
+
+
 
 
 """"
