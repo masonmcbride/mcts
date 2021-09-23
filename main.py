@@ -48,4 +48,8 @@ the search just needs to check the nodes as losing and then if the state is pure
 then it can do the magic.
 
 NODES AWARE
+
+There must exist some method or algorithm that over lim n -> inf iterations 
+it can correctly converge to the strategy 
+for example, this algorithm must be able to converge to a pure strategy over lim n -> inf iterations
 """
