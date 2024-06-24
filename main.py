@@ -1,14 +1,17 @@
-from tictactoe import *
-from mcts_node import *
-from mcts_search import *
+import numpy as np
+from tictactoe import TicTacToeState
 
 empty_board = np.zeros((3, 3))
+new_game = TicTacToeState(state=empty_board)
+move1 = new_game.transition((0,0))
+print(move1)
+move2 = move1.transition((1,1))
+print(move2)
+
 board_s1 = np.array([
         [1,0,0],
         [0,1,-1],
         [-1,0,1]])
-initial_board_state = TicTacToeGameState(state=board_s1, next_to_move=-1)
-
 #This root is very important. I'm gonna use it to get the whole game tree
 root = MonteCarloTreeSearchNode(state=initial_board_state, parent=None)
 #NOTE Now that I have the root I can keep track of the tree? 
