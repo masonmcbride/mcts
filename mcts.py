@@ -1,17 +1,18 @@
-from typing import Object, Any
+from typing import Any
 import random
 import numpy as np
 
-GameState = Object
+GameState = Any
 class MCTSNode:
     def __init__(node, game_state: GameState, parent: Any | None, prior: float):
-        node.game_state = game_state # game state that this node is derived from
-        node.is_terminal: bool = game_state.is_terminal()
+        node.game_state: GameState = game_state # game state that this node is derived from
+        node.is_terminal: bool = game_state.is_terminal
         node.parent = parent # parent MCTSNode
         node.P: float = prior # transition probablity of reaching this state
-        node.N: int = 1 # number of visits
+        node.N: int = 0 # number of visits
         node.W: int = 0 # sum of all rewards 
         node.children: list = []
+        print("node initialized")
     
     @property
     def Q(self) -> float:
@@ -21,36 +22,33 @@ class MCTS:
     def __init__(tree, game_state: GameState):
         tree.root: MCTSNode = MCTSNode(game_state,parent=None,prior=1) # parent is none and 100% transition prob
 
+    def best_child(tree, node: MCTSNode):
+        return max([child for child in node.children], key=tree.PUCT)
+
     def select(tree):
         """iterative traversal of tree"""
         current_node = tree.root
         while not current_node.is_terminal:
-            if current_node.N == 1: # if the node has just been reached
-                
-
+            if current_node.N == 0:
+                game = current_node.game_state
+                for action in game.all_legal_actions:
+                    new_game = game.transition(action)
+                    child_node = MCTSNode(new_game,parent=current_node,prior=1)
+                    reward = tree.rollout(child_node)
+                    tree.backprop(child_node,reward)
+                    current_node.children.append(child_node)
             else:
+                print(f"{current_node.N=}")
                 current_node = tree.best_child(current_node)
         return current_node
-    
-
-    def best_child(tree, node: MCTSNode):
-        return max([child for child in node.children.values()], key=tree.PUCT)
-
-
-    def expand(self, node, p):
-        action = node.untried_actions.pop()
-        next_state = node.state.make_action(action)
-        child_node = Node(next_state, parent=node, prior=p[0][action])
-        node.children[action] = child_node
-        return child_node
 
     def rollout(tree, node: MCTSNode) -> int:
         """Detach game from MCTS Node, Simluate until end state and return reward"""
         game = node.game_state
-        while not (result:=game.is_terminal()):
-            action = random.choice(game.all_legal_actions())
+        while not game.is_terminal:
+            action = random.choice(game.all_legal_actions)
             game = game.transition(action)
-        reward = result
+        reward = game.result
         return reward
 
     def backprop(tree, node: MCTSNode, value: int) -> None:
