@@ -3,19 +3,20 @@ from tictactoe import TicTacToeState
 from mcts import MCTS
 
 empty_board = np.zeros((3, 3))
-new_game = TicTacToeState(state=empty_board)
-move1: TicTacToeState = new_game.transition((0,0))
-print(move1)
-move2: TicTacToeState = move1.transition((1,1))
-print(move2)
-
 board_s1 = np.array([
-        [1,0,0],
-        [0,1,-1],
-        [-1,0,1]])
+        [1,-1,0],
+        [1,1,-1],
+        [-1,0,0]])
+new_game = TicTacToeState(state=empty_board)
+almost_won = TicTacToeState(state=board_s1)
+
 #This root is very important. I'm gonna use it to get the whole game tree
-mcts = MCTS(game_state=new_game)
-mcts.search(1)
+mcts = MCTS(game_state=almost_won)
+mcts.search(10000)
+print(mcts.best_child(mcts.root).game_state)
+for child in mcts.root.children:
+    print(f"{child.N}---")
+    print(child.game_state)
 #This should output the board and the probability distrubtion of each of the squares
 """
 For every state of the game tree run MCTS 10000s.

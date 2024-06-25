@@ -49,7 +49,7 @@ class TicTacToeState():
             return -1
 
         if len(game.all_legal_actions) == 0:
-            return 0
+            return -1
 
         return None
     
