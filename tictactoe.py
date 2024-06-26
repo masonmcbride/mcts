@@ -7,11 +7,11 @@ class TicTacToeState():
     def __init__(game, state: np.ndarray):
         game.state: np.ndarray = state
         game.player = 1 if np.sum(state) <= 0 else -1
-        game.all_legal_actions: list[tuple] = [action for 
-                                               action in product(*[range(dim) for dim in state.shape])
-                                               if state[action] == 0]
         game.result = game.game_result()
         game.is_terminal = True if game.result is not None else False
+        game.all_legal_actions: list[tuple] = [action for 
+                                               action in product(*[range(dim) for dim in state.shape])
+                                               if state[action] == 0] if not game.is_terminal else []
     
     def transition(game, action: tuple) -> 'TicTacToeState':
         new_state = game.state.copy()
@@ -33,25 +33,44 @@ class TicTacToeState():
         diag_sum_tr = board[::-1].trace()
 
         player_one_wins = any(rowsum == three_in_a_row)
-        player_one_wins += any(colsum == three_in_a_row)
-        player_one_wins += (diag_sum_tl == three_in_a_row)
-        player_one_wins += (diag_sum_tr == three_in_a_row)
+        player_one_wins |= any(colsum == three_in_a_row)
+        player_one_wins |= (diag_sum_tl == three_in_a_row)
+        player_one_wins |= (diag_sum_tr == three_in_a_row)
 
         if player_one_wins:
             return 1
 
         player_two_wins = any(rowsum == -three_in_a_row)
-        player_two_wins += any(colsum == -three_in_a_row)
-        player_two_wins += (diag_sum_tl == -three_in_a_row)
-        player_two_wins += (diag_sum_tr == -three_in_a_row)
+        player_two_wins |= any(colsum == -three_in_a_row)
+        player_two_wins |= (diag_sum_tl == -three_in_a_row)
+        player_two_wins |= (diag_sum_tr == -three_in_a_row)
 
         if player_two_wins:
             return -1
 
-        if len(game.all_legal_actions) == 0:
-            return -1
+        if np.all(board != 0):
+            return 0
 
         return None
     
     def __str__(game):
         return str(game.state)
+    
+    def __hash__(game):
+        return hash(tuple(game.state.flat))
+
+    def __eq__(game, other):
+        if isinstance(other, TicTacToeState):
+            return np.array_equal(game.state, other.state)
+        return False
+
+def test_tic_tac_toe():
+    def all_states(state: TicTacToeState):
+        """Generate all states of tictactoe. The number of valid states is 5478. """
+        yield state
+        for action in state.all_legal_actions:
+            new_state = state.transition(action)
+            yield from all_states(new_state)
+    empty_board = np.zeros((3,3))
+    new_game = TicTacToeState(state=empty_board)
+    assert len(set(all_states(new_game))) == 5478
