@@ -10,8 +10,21 @@ def test_mcts_picks_winning_move_when_almost_won():
     almost_won = TicTacToeState(state=one_move_to_win)
     mcts = MCTS(game_state=almost_won)
     mcts.search(8) # With UCB, it figures it out in one search but with PUCT you need 10
+    for child in mcts.root.children:
+        print(child.results)
     winning_move = max(mcts.root.children, key=lambda child: child.Q)
     assert winning_move.game_state.state[2,2] == 1
+
+def test_mcts_results_contain_no_losses():
+    one_move_to_win = np.array([
+        [1,-1,0],
+        [1,1,-1],
+        [-1,0,0]])
+    almost_won = TicTacToeState(state=one_move_to_win)
+    mcts = MCTS(game_state=almost_won)
+    mcts.search(50)
+    print(mcts.root.results)
+    assert mcts.root.results[-1] == 0
 
 def test_mcts_blocks_win():
     board = np.array([
@@ -24,8 +37,8 @@ def test_mcts_blocks_win():
         [0,-1,1],
         [1,0,1]])
     mcts = MCTS(game_state=O_can_win)
-    mcts.search(8) # With UCB, it figures it out in one search but with PUCT you need 10
-    chosen_move = max(mcts.root.children, key=lambda child: child.N)
+    mcts.search(50) # With UCB, it figures it out in one search but with PUCT you need 10
+    chosen_move = max(mcts.root.children, key=lambda child: child.Q)
     assert np.array_equal(chosen_move.game_state.state, blocked)
 
 def test_one_run_expands_and_selects_one():

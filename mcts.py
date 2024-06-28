@@ -13,6 +13,7 @@ class MCTSNode:
         node.N: int = 0                  # number of visits
         node.W: int = 0                  # sum of all rewards 
         node.P: float = prior            # transition probablity of reaching this state
+        node.results = {1: 0, -1: 0, 0:0}
     
     @property
     def Q(self) -> float:
@@ -26,35 +27,36 @@ class MCTS:
     def best_child(tree, node: MCTSNode) -> MCTSNode:
         return max([child for child in node.children], key=tree.PUCT)
 
-    def select(tree) -> MCTSNode:
+    def select(tree) -> list[MCTSNode]:
         """MCTS Selection.
         The tree selects the most promising node until it reaches an unexpanded node"""
-        selected_node = tree.root # Start at the root
+        selected_node = tree.root 
         path = [selected_node]
         while selected_node.is_expanded and not selected_node.is_terminal:
             selected_node = tree.best_child(selected_node)
             path.append(selected_node)
-        return selected_node, path
+        return path
 
-    def expand(tree, node: MCTSNode, path: list[MCTSNode]):
+    def expand(tree, path: list[MCTSNode]) -> list[MCTSNode]:
         """MCTS Expansion.
         The unexpanded node is expanded and the most promising child is returned to be rolled out."""
-        if node.is_terminal:
-            return node
+        expanding_node = path[-1]
+        if expanding_node.is_terminal:
+            return path
         else:
-            game = node.game_state
+            game = expanding_node.game_state
             for action in game.all_legal_actions:
                 if (new_state := game.transition(action)) in tree.states:
-                    node.children.append(tree.states[new_state])
-                    tree.states[new_state].parents.append(node)
+                    expanding_node.children.append(tree.states[new_state])
+                    tree.states[new_state].parents.append(expanding_node)
                 else:
-                    child = MCTSNode(game_state=new_state,parents=[node],prior=1)
-                    node.children.append(child)
+                    child = MCTSNode(game_state=new_state,parents=[expanding_node],prior=1)
+                    expanding_node.children.append(child)
                     reward = tree.rollout(child)
                     tree.backprop(path + [child], reward)
                     tree.states[new_state] = child
-            node.is_expanded = True
-            return tree.best_child(node)
+                expanding_node.is_expanded = True
+            return path + [tree.best_child(expanding_node)]
 
     def rollout(tree, node: MCTSNode) -> int:
         """MCTS Rollout.
@@ -64,15 +66,17 @@ class MCTS:
             action = random.choice(game.all_legal_actions)
             game = game.transition(action)
         reward = game.result
-        return reward * -game.player
+        return reward
 
     def backprop(tree, path: list[MCTSNode], value: int) -> None:
         """MCTS Backropagation. 
         The reward from this terminal state must be propagated up stream to update MCTS behavior"""
+        value *= -path[-1].game_state.player
         for node in reversed(path):
-            node.W += value
+            node.W += value 
             node.N += 1
             value = -value
+            node.results[value] += 1
     
     def UCB(tree, node: MCTSNode, c_param=2) -> float:
         """Returns (U)pper (C)onfidence (B)ound score for MCTSNode"""
@@ -88,10 +92,9 @@ class MCTS:
         In my version (for small branching factors), all child nodes are expanded at the same time.
         This is just better (unless you have 1 million actions, but why are you using MCTS), 
         but prove me wrong."""
-        node, path = tree.select() #SELECTION 
-        node = tree.expand(node, path) # EXPANSION
-        path.append(node)
-        reward = tree.rollout(node) # ROLLOUT
+        path = tree.select() #SELECTION 
+        path = tree.expand(path) # EXPANSION
+        reward = tree.rollout(path[-1]) # ROLLOUT
         tree.backprop(path, reward) # BACKPROP
 
     def search(self, n):
