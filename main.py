@@ -14,9 +14,8 @@ profiler.enable()
 
 
 # Development in Gotham City Here
-
-
-
+# TODO Connect 4 Needs the get_state treatment
+# Do 10000 tic tac toe searches from empty board, get the state with the X's in the corners and see if corner action has win
 
 
 profiler.disable()
