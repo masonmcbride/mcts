@@ -4,25 +4,21 @@ import io
 import numpy as np
 from graphviz import Digraph
 from pprint import pprint
-from tictactoe import TicTacToe, test_tic_tac_toe
-from connect4 import Connect4State
-from test_mcts_tictactoe import test_mcts_picks_winning_move_when_almost_won
+from tictactoe import TicTacToe
+from connect4 import Connect4
 from mcts import MCTS
 
 profiler = cProfile.Profile()
 profiler.enable()
-board = np.array([
-    [ 0, -1, 0, -1,  1, -1,  0],
-    [-1,  1, 0,  1, -1,  1, -1],
-    [-1,  1, 1,  1, -1,  -1, 1],
-    [ 1, -1,  1, -1,  1, -1,  1],
-    [ 1, -1,  1, -1,  1, -1,  1],
-    [-1,  1, -1,  1, -1,  1, -1]
-    ])
-print(np.sum(board))
-one_move_to_win = Connect4State(state=board)
-mcts = MCTS(game_state=one_move_to_win)
-mcts.search(100)
+
+
+
+# Development in Gotham City Here
+
+
+
+
+
 profiler.disable()
 
 # Create a string stream to store the profiling results
