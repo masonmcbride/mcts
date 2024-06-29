@@ -58,7 +58,7 @@ class TicTacToeState():
         return str(game.state)
     
     def __hash__(game):
-        return hash(tuple(game.state.flat))
+        return hash(tuple(game.state.flat)) 
 
     def __eq__(game, other):
         if isinstance(other, TicTacToeState):

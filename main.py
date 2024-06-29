@@ -3,23 +3,17 @@ import pstats
 import io
 import numpy as np
 from graphviz import Digraph
+from pprint import pprint
 from tictactoe import TicTacToe, test_tic_tac_toe
+from test_mcts_tictactoe import test_mcts_picks_winning_move_when_almost_won
 from mcts import MCTS
 
 profiler = cProfile.Profile()
 profiler.enable()
-
-board = np.array([
-        [1,-1,-1],
-        [0,-1,1],
-        [0,0,1]])
-O_can_win = TicTacToe.get_state(state=board)
-mcts = MCTS(game_state=O_can_win)
-mcts.search(1000) # With UCB, it figures it out in one search but with PUCT you need 10
-for child in mcts.root.children:
-    print(child.Q)
-chosen_move = max(mcts.root.children, key=lambda child: child.Q)
-
+empty_board = np.zeros((3, 3))
+new_game = TicTacToe.get_state(state=empty_board)
+mcts = MCTS(game_state=new_game)
+mcts.search(1_000_000)
 profiler.disable()
 
 # Create a string stream to store the profiling results
@@ -28,7 +22,8 @@ sortby = 'cumulative'
 ps = pstats.Stats(profiler, stream=s).sort_stats(sortby)
 ps.strip_dirs().sort_stats(sortby).print_stats()
 
-#print(s.getvalue())
+print(s.getvalue())
+pprint([c.results for c in mcts.root.children])
     
 def format_board(board: np.ndarray):
     """Convert numpy array to a string format suitable for graph labels."""

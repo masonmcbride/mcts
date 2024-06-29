@@ -22,7 +22,13 @@ class MCTSNode:
 class MCTS:
     def __init__(tree, game_state: GameState):
         tree.root: MCTSNode = MCTSNode(game_state,parents=[],prior=1) # parent is none and 100% transition prob
-        tree.states = {game_state: tree.root}
+        tree.nodes: dict[GameState, MCTSNode] = {game_state: tree.root}
+    
+    def get_node(tree, game_state: GameState, parents: list['MCTSNode'], prior: float) -> MCTSNode:
+        """Retrieve or create a new MCTSNode for the given game state."""
+        if game_state not in tree.nodes:
+            tree.nodes[game_state] = MCTSNode(game_state=game_state, parents=parents, prior=prior)
+        return tree.nodes[game_state]
 
     def best_child(tree, node: MCTSNode) -> MCTSNode:
         return max([child for child in node.children], key=tree.PUCT)
@@ -37,7 +43,7 @@ class MCTS:
             path.append(selected_node)
         return path
 
-    def expand(tree, path: list[MCTSNode]) -> list[MCTSNode]:
+    def expand(self, path: list[MCTSNode]) -> list[MCTSNode]:
         """MCTS Expansion.
         The unexpanded node is expanded and the most promising child is returned to be rolled out."""
         expanding_node = path[-1]
@@ -46,17 +52,13 @@ class MCTS:
         else:
             game = expanding_node.game_state
             for action in game.all_legal_actions:
-                if (new_state := game.transition(action)) in tree.states:
-                    expanding_node.children.append(tree.states[new_state])
-                    tree.states[new_state].parents.append(expanding_node)
-                else:
-                    child = MCTSNode(game_state=new_state,parents=[expanding_node],prior=1)
-                    expanding_node.children.append(child)
-                    reward = tree.rollout(child)
-                    tree.backprop(path + [child], reward)
-                    tree.states[new_state] = child
-                expanding_node.is_expanded = True
-            return path + [tree.best_child(expanding_node)]
+                new_state = game.transition(action)
+                child_node = self.get_node(new_state, parents=[expanding_node], prior=1)
+                expanding_node.children.append(child_node)
+                reward = self.rollout(child_node)
+                self.backprop(path + [child_node], reward)
+            expanding_node.is_expanded = True
+            return path + [self.best_child(expanding_node)]
 
     def rollout(tree, node: MCTSNode) -> int:
         """MCTS Rollout.
@@ -97,10 +99,10 @@ class MCTS:
         reward = tree.rollout(path[-1]) # ROLLOUT
         tree.backprop(path, reward) # BACKPROP
 
-    def search(self, n):
+    def search(tree, n):
         """Perform n MCTS runs from the root. This is equivalent to MCTS 'thinking' or 'searching'
         the space for a good action."""
         for i in range(n):
-            if i % 250 == 0:
+            if i % 1000 == 0:
                 print(f"run {i}")
-            self.run()
+            tree.run()
