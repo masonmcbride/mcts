@@ -5,15 +5,24 @@ import numpy as np
 from graphviz import Digraph
 from pprint import pprint
 from tictactoe import TicTacToe, test_tic_tac_toe
+from connect4 import Connect4State
 from test_mcts_tictactoe import test_mcts_picks_winning_move_when_almost_won
 from mcts import MCTS
 
 profiler = cProfile.Profile()
 profiler.enable()
-empty_board = np.zeros((3, 3))
-new_game = TicTacToe.get_state(state=empty_board)
-mcts = MCTS(game_state=new_game)
-mcts.search(1_000_000)
+board = np.array([
+    [ 0, -1, 0, -1,  1, -1,  0],
+    [-1,  1, 0,  1, -1,  1, -1],
+    [-1,  1, 1,  1, -1,  -1, 1],
+    [ 1, -1,  1, -1,  1, -1,  1],
+    [ 1, -1,  1, -1,  1, -1,  1],
+    [-1,  1, -1,  1, -1,  1, -1]
+    ])
+print(np.sum(board))
+one_move_to_win = Connect4State(state=board)
+mcts = MCTS(game_state=one_move_to_win)
+mcts.search(100)
 profiler.disable()
 
 # Create a string stream to store the profiling results
@@ -23,15 +32,15 @@ ps = pstats.Stats(profiler, stream=s).sort_stats(sortby)
 ps.strip_dirs().sort_stats(sortby).print_stats()
 
 print(s.getvalue())
-pprint([c.results for c in mcts.root.children])
+pprint([c.Q for c in mcts.root.children])
     
-def format_board(board: np.ndarray):
+def format_board(board: np.ndarray, result: int):
     """Convert numpy array to a string format suitable for graph labels."""
     player = 1 if np.sum(board) <= 0 else -1
-    return f'player {player}\n' + '\n'.join(' '.join(str(int(cell)) for cell in row) for row in board)
+    return f'player {player}\n' + '\n'.join(' '.join(str(int(cell)) for cell in row) for row in board) + f'\n{result}'
 
 def add_nodes_edges(graph, node, seen):
-    node_label = format_board(node.game_state.state)
+    node_label = format_board(node.game_state.state, node.game_state.result)
     if node in seen:
         return
     seen.add(node)

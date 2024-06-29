@@ -5,14 +5,14 @@ class TicTacToeState():
     """A tictactoe state is the state of a tic tac toe board. Tictactoe is perfect information."""
     __slots__ = ('state','player','all_legal_actions','result','is_terminal')
     
-    def __init__(self, state: np.ndarray):
-        self.state: np.ndarray = state
-        self.player = 1 if np.sum(state) <= 0 else -1
-        self.result = self.game_result()
-        self.is_terminal = True if self.result is not None else False
-        self.all_legal_actions: list[tuple] = [action for 
+    def __init__(game, state: np.ndarray):
+        game.state: np.ndarray = state
+        game.player = 1 if np.sum(state) <= 0 else -1
+        game.result = game.game_result()
+        game.is_terminal = True if game.result is not None else False
+        game.all_legal_actions: list[tuple] = [action for 
                                                 action in product(*[range(dim) for dim in state.shape])
-                                                if state[action] == 0] if not self.is_terminal else []
+                                                if state[action] == 0] if not game.is_terminal else []
     
     def transition(game, action: tuple) -> 'TicTacToeState':
         new_state = game.state.copy()
@@ -67,18 +67,18 @@ class TicTacToeState():
 
 class TicTacToe:
     """Class to manage TicTacToe states and cache."""
-    _state_cache: dict[np.ndarray, TicTacToeState]= {}
+    game_states: dict[np.ndarray, TicTacToeState]= {}
 
     @classmethod
     def get_state(cls, state: np.ndarray) -> TicTacToeState:
         state_tuple = tuple(state.flat)
-        if state_tuple not in cls._state_cache:
-            cls._state_cache[state_tuple] = TicTacToeState(state)
-        return cls._state_cache[state_tuple]
+        if state_tuple not in cls.game_states:
+            cls.game_states[state_tuple] = TicTacToeState(state)
+        return cls.game_states[state_tuple]
 
     @classmethod
     def reset_cache(cls):
-        cls._state_cache = {}
+        cls.game_states = {}
 
 def test_tic_tac_toe():
     def all_states(state: TicTacToeState):

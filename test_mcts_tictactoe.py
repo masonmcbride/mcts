@@ -21,7 +21,6 @@ def test_mcts_results_contain_no_losses():
     almost_won = TicTacToe.get_state(state=one_move_to_win)
     mcts = MCTS(game_state=almost_won)
     mcts.search(50)
-    print(mcts.root.results)
     assert mcts.root.results[-1] == 0
 
 def test_mcts_blocks_win():
@@ -35,7 +34,7 @@ def test_mcts_blocks_win():
         [1,-1,0],
         [0,0,1]])
     mcts = MCTS(game_state=O_can_win)
-    mcts.search(50) # With UCB, it figures it out in one search but with PUCT you need 10
+    mcts.search(50) 
     chosen_move = max(mcts.root.children, key=lambda child: child.Q)
     assert np.array_equal(chosen_move.game_state.state, blocked)
 
