@@ -34,7 +34,7 @@ def test_mcts_results_contain_no_losses():
     ])
     win_or_draw = Connect4State(state=cant_lose)
     mcts = MCTS(game_state=win_or_draw)
-    mcts.search(100)
+    mcts.search(1000)
     assert mcts.root.results[-1] == 0
 
 def test_mcts_blocks_win():
