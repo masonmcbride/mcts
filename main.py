@@ -2,21 +2,26 @@ import cProfile
 import pstats
 import io
 import numpy as np
-from graphviz import Digraph
-from pprint import pprint
-from tictactoe import TicTacToe
+from visualize import visualize_tree
 from connect4 import Connect4
 from mcts import MCTS
 
 profiler = cProfile.Profile()
+
+cant_lose = np.array([
+    [ 0, -1, 0, -1,  1, -1,  0],
+    [-1,  1, 0,  1, -1,  1, -1],
+    [-1,  1, 1,  1, -1,  -1, 1],
+    [ 1, -1,  1, -1,  1, -1,  1],
+    [ 1, -1,  1, -1,  1, -1,  1],
+    [-1,  1, -1,  1, -1,  1, -1]
+    ])
+win_or_draw = Connect4.get_state(state=cant_lose)
+mcts = MCTS(game_state=win_or_draw)
+
 profiler.enable()
 
-
-
-# Development in Gotham City Here
-# TODO Connect 4 Needs the get_state treatment
-# Do 10000 tic tac toe searches from empty board, get the state with the X's in the corners and see if corner action has win
-
+mcts.search(10000)
 
 profiler.disable()
 
@@ -25,30 +30,7 @@ s = io.StringIO()
 sortby = 'cumulative'
 ps = pstats.Stats(profiler, stream=s).sort_stats(sortby)
 ps.strip_dirs().sort_stats(sortby).print_stats()
-
 print(s.getvalue())
-pprint([c.Q for c in mcts.root.children])
-    
-def format_board(board: np.ndarray, result: int):
-    """Convert numpy array to a string format suitable for graph labels."""
-    player = 1 if np.sum(board) <= 0 else -1
-    return f'player {player}\n' + '\n'.join(' '.join(str(int(cell)) for cell in row) for row in board) + f'\n{result}'
-
-def add_nodes_edges(graph, node, seen):
-    node_label = format_board(node.game_state.state, node.game_state.result)
-    if node in seen:
-        return
-    seen.add(node)
-    graph.node(name=str(id(node)), label=node_label, shape='circle')
-    for child in node.children:
-        graph.edge(str(id(node)), str(id(child)))
-        add_nodes_edges(graph, child, seen)
-
-def visualize_tree(root):
-    graph = Digraph(comment='game_tree', format='png')
-    seen = set()
-    add_nodes_edges(graph, root, seen)
-    return graph
 
 graph = visualize_tree(mcts.root)
 graph.render('game_tree', format='png', cleanup=True)

@@ -17,7 +17,7 @@ class Connect4State:
             if row_entry == 0:
                 new_state[game.state.shape[0]-i-1,action] = game.player
                 break
-        return Connect4State(new_state)
+        return Connect4.get_state(new_state)
     
     def game_result(game) -> int | None:
         def check_4by4(view: np.ndarray):
@@ -45,3 +45,18 @@ class Connect4State:
         if isinstance(other, Connect4State):
             return np.array_equal(game.state, other.state)
         return False
+
+class Connect4:
+    """Class to manage TicTacToe states and cache."""
+    game_states: dict[np.ndarray, Connect4State]= {}
+
+    @classmethod
+    def get_state(cls, state: np.ndarray) -> Connect4State:
+        state_tuple = tuple(state.flat)
+        if state_tuple not in cls.game_states:
+            cls.game_states[state_tuple] = Connect4State(state)
+        return cls.game_states[state_tuple]
+
+    @classmethod
+    def reset_cache(cls):
+        cls.game_states = {}
