@@ -47,7 +47,7 @@ class Connect4State:
         return False
 
 class Connect4:
-    """Class to manage TicTacToe states and cache."""
+    """Class to manage Connect4 states and cache."""
     game_states: dict[np.ndarray, Connect4State]= {}
 
     @classmethod

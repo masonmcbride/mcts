@@ -21,7 +21,8 @@ mcts = MCTS(game_state=win_or_draw)
 
 profiler.enable()
 
-mcts.search(10000)
+for _ in range(100000):
+    mcts.run()
 
 profiler.disable()
 
