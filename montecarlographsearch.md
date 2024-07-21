@@ -10,7 +10,7 @@ Unfortunately, this is partly because the perhaps-standard academic reference fo
 In game-tree search or other applications of tree search, often we can find multiple possible sequences of moves or actions *transpose* to the same state. For example, in chess, `1. d4 d5 2. Nf3` leads to the same position as `1. Nf3 d5 2. d4`.
 
 <table class="image">
-<tr><td><img src="../images/docs/chesstransposition.png" height="300"/></td></tr>
+<tr><td><img src="images/docs/chesstransposition.png" height="300"/></td></tr>
 <tr><td><sub>Example of transposition: `1. d4 d5 2. Nf3` leads to the same position as `1. Nf3 d5 2. d4`.</sub></td></tr>
 </table>
 
@@ -46,9 +46,9 @@ A single iteration, or *playout*, of MCTS consists of:
 Here's an illustration:
 <table class="image">
 <tr>
-<td><img src="../images/docs/mcts1.png" height="400"/></td>
-<td><img src="../images/docs/mcts2.png" height="400"/></td>
-<td><img src="../images/docs/mcts3.png" height="400"/></td>
+<td><img src="images/docs/mcts1.png" height="400"/></td>
+<td><img src="images/docs/mcts2.png" height="400"/></td>
+<td><img src="images/docs/mcts3.png" height="400"/></td>
 </tr>
 <tr>
 <td><sub>1 - Walk down tree via exploration formula.</sub></td>
@@ -124,7 +124,7 @@ Why does this not work?
 
 Consider the following initial situation. Square nodes are where the player to move prefers high Q values. Circle nodes are the opponent's who prefers low Q values.
 <table class="image">
-<tr><td><img src="../images/docs/mcgsbad1.png" height="350"/></td></tr>
+<tr><td><img src="images/docs/mcgsbad1.png" height="350"/></td></tr>
 <tr><td><sub>Initial situation</sub></td></tr>
 </table>
 
@@ -132,7 +132,7 @@ We have 3 nodes, with Q values around 0.38 or 0.39. Currently, at node A the pla
 
 Now, suppose node C receives a lot more playouts from transposing paths, in the process, deeper below node C a new tactic is discovered that causes node C's utility to rise a lot, to 0.51:
 <table class="image">
-<tr><td><img src="../images/docs/mcgsbad2.png" height="350"/></td></tr>
+<tr><td><img src="images/docs/mcgsbad2.png" height="350"/></td></tr>
 <tr><td><sub>Suppose C gets more playouts and its utility rises 0.39 -> 0.51</sub></td></tr>
 </table>
 
@@ -140,7 +140,7 @@ Now we have a strange situation. Initially, node A's Q value was 0.39 almost ent
 
 Moreover, suppose node A receives some playouts next. It's quite possible that following PUCT or similar move exploration formulas, node A would spend them exploring nodes *other* than node C:
 <table class="image">
-<tr><td><img src="../images/docs/mcgsbad3.png" height="350"/></td></tr>
+<tr><td><img src="images/docs/mcgsbad3.png" height="350"/></td></tr>
 <tr><td><sub>Because C has many playouts, A might prefer to explore worse nodes, biasing its Q down!</sub></td></tr>
 </table>
 
@@ -156,7 +156,7 @@ Here's another try. What if we make it so that whenever a node is updated due to
 
 But consider the following situation:
 <table class="image">
-<tr><td><img src="../images/docs/mcgsbad4.png" height="350"/></td></tr>
+<tr><td><img src="images/docs/mcgsbad4.png" height="350"/></td></tr>
 <tr><td><sub>Another initial situation</sub></td></tr>
 </table>
 
@@ -164,7 +164,7 @@ Node D has Q = 0.55. Since the square player is maximizing, this is roughly cons
 
 Now, suppose node F gets 100 more visits from the other branches of search:
 <table class="image">
-<tr><td><img src="../images/docs/mcgsbad5.png" height="350"/></td></tr>
+<tr><td><img src="images/docs/mcgsbad5.png" height="350"/></td></tr>
 <tr><td><sub>F gets 100 more visits with similar low utility, and D's Q value gets corrupted.</sub></td></tr>
 </table>
 
