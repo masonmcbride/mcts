@@ -1,7 +1,7 @@
 import numpy as np
 from itertools import product
 
-class TicTacToeState():
+class TicTacToeState:
     """A tictactoe state is the state of a tic tac toe board. Tictactoe is perfect information."""
     __slots__ = ('state','player','all_legal_actions','result','is_terminal')
     

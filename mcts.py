@@ -21,7 +21,7 @@ class MCTSNode:
 
 class MCTS:
     def __init__(tree, game_state: GameState):
-        tree.root: MCTSNode = MCTSNode(game_state) # parent is none and 100% transition prob
+        tree.root: MCTSNode = MCTSNode(game_state)
         tree.nodes: dict[GameState, MCTSNode] = {game_state: tree.root}
     
     def get_node(tree, game_state: GameState) -> MCTSNode:
