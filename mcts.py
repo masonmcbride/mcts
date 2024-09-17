@@ -66,34 +66,34 @@ class MCTS:
 
         return best_action
 
-    def run(self, node: MCTSNode = None):
+    def run(tree, node: MCTSNode = None):
         """Perform one playout from the given node."""
         if node is None:
-            node = self.root
+            node = tree.root
 
         if node.is_terminal:
             node.U = node.game_state.result
             node.results[node.U] += 1
         elif node.N == 0:  # New node not yet visited
-            node.U = self.get_utility_from_neural_net(node)
+            node.U = tree.rollout(node)
             node.results[node.U] += 1
         else:
-            action = self.select_action_according_to_puct(node)
+            action = tree.select_action_according_to_puct(node)
             if action not in node.children_and_edge_visits:
                 new_game_state = node.game_state.transition(action)
-                new_game_state_hash = self.hash_game_state(new_game_state)
-                if new_game_state_hash in self.nodes_by_hash:
-                    child = self.nodes_by_hash[new_game_state_hash]
+                new_game_state_hash = tree.hash_game_state(new_game_state)
+                if new_game_state_hash in tree.nodes_by_hash:
+                    child = tree.nodes_by_hash[new_game_state_hash]
                     node.children_and_edge_visits[action] = (child, 0)
                 else:
                     new_node = MCTSNode(game_state=new_game_state)
                     node.children_and_edge_visits[action] = (new_node, 0)
-                    self.nodes_by_hash[new_game_state_hash] = new_node
+                    tree.nodes_by_hash[new_game_state_hash] = new_node
                 child, edge_visits = node.children_and_edge_visits[action]
             else:
                 child, edge_visits = node.children_and_edge_visits[action]
 
-            self.run(child)
+            tree.run(child)
             child, edge_visits = node.children_and_edge_visits[action]
             node.children_and_edge_visits[action] = (child, edge_visits + 1)
 
