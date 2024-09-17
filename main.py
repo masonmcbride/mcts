@@ -2,7 +2,7 @@ import cProfile
 import pstats
 import io
 import numpy as np
-from visualize import visualize_tree
+#from visualize import visualize_tree
 from connect4 import Connect4
 from mcts import MCTS
 
@@ -33,5 +33,5 @@ ps = pstats.Stats(profiler, stream=s).sort_stats(sortby)
 ps.strip_dirs().sort_stats(sortby).print_stats()
 print(s.getvalue())
 
-graph = visualize_tree(mcts.root)
-graph.render('game_tree', format='png', cleanup=True)
+#graph = visualize_tree(mcts.root)
+#graph.render('game_tree', format='png', cleanup=True)
