@@ -1,6 +1,6 @@
 import numpy as np
 from connect4 import Connect4State
-from mcts import MCTS, MCTS2
+from mcts import MCTS
 
 def test_mcts_chooses_winning_move():
     board = np.array([
@@ -20,8 +20,8 @@ def test_mcts_chooses_winning_move():
         [0., 0., 0., 1., 0., 0., 0.],
         [0., 0., -1, 1., 0., 0., 0.],
         [0., 0., -1, 1, -1, 0., 0.]])
-    winning_move = max([child for child,_ 
-                        in mcts.root.children_and_edge_visits.values()],
+    winning_move = max([child for child 
+                        in mcts.root.child_to_edge_visits.keys()],
                         key=lambda child: child.Q)
     assert np.array_equal(winning_move.game_state.state, answer) 
 
@@ -58,10 +58,10 @@ def test_mcts_blocks_win():
     print("MCTS")
     mcts = MCTS(game_state=O_can_win)
     mcts.search(50) 
-    chosen_move = max([child for child,_ 
-                        in mcts.root.children_and_edge_visits.values()],
+    chosen_move = max([child for child 
+                        in mcts.root.child_to_edge_visits.keys()],
                         key=lambda child: child.Q)
-    print([child.Q for child,_ in mcts.root.children_and_edge_visits.values()])
+    print([child.Q for child in mcts.root.child_to_edge_visits.keys()])
     print(chosen_move.game_state)
     assert np.array_equal(chosen_move.game_state.state, blocked)
 

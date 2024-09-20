@@ -8,29 +8,54 @@ class MCTSNode:
     def __init__(self, game_state: GameState):
         self.game_state: GameState = game_state  # Game state associated with this node
         self.is_terminal: bool = game_state.is_terminal
+        self.is_expanded: bool = False
         self.N: int = 0  # Visit count
         self.Q: float = 0.0  # Average value
-        self.U: float = 0.0  # Utility value (from neural net or rollout)
-        self.children_and_edge_visits: dict[Any, tuple['MCTSNode', int]] = {}  # action -> (child node, edge visits)
+        self.child_to_edge_visits: dict[MCTSNode, int] = {}  # child node -> edge visits
         self.results = {1: 0, -1: 0, 0: 0}
 
 class MCTS:
     def __init__(tree, game_state: GameState):
         tree.root: MCTSNode = MCTSNode(game_state)
-        tree.nodes_by_hash: dict[Any, MCTSNode] = {tree.hash_game_state(game_state): tree.root}
+        tree.nodes: dict[Any, MCTSNode] = {game_state: tree.root}
 
-    def hash_game_state(self, game_state: GameState) -> Any:
-        """Generate a unique hash for the game state."""
-        return hash(game_state)  # Assumes GameState has a 'hash' property
-
-    def get_node(self, game_state: GameState) -> MCTSNode:
+    def get_node(tree, game_state: GameState) -> MCTSNode:
         """Retrieve or create a new MCTSNode for the given game state."""
-        state_hash = self.hash_game_state(game_state)
-        if state_hash not in self.nodes_by_hash:
-            self.nodes_by_hash[state_hash] = MCTSNode(game_state=game_state)
-        return self.nodes_by_hash[state_hash]
+        if game_state not in tree.nodes:
+            tree.nodes[game_state] = MCTSNode(game_state=game_state)
+        return tree.nodes[game_state]
 
-    def rollout(self, node: MCTSNode) -> float:
+    def best_child(tree, node: MCTSNode) -> MCTSNode:
+            return max([child for child in node.child_to_edge_visits.keys()], key=lambda x: tree.PUCT(node,x))
+
+    def select(tree) -> list[MCTSNode]:
+        """MCTS Selection.
+        The tree selects the most promising node until it reaches an unexpanded node"""
+        path = [tree.root]
+        while path[-1].is_expanded and not path[-1].is_terminal:
+            next_node = tree.best_child(path[-1])
+            path[-1].child_to_edge_visits[next_node] += 1
+            path.append(next_node)
+        return path
+
+    def expand(tree, path: list[MCTSNode]) -> list[MCTSNode]:
+        """MCTS Expansion.
+        The unexpanded node is expanded and the most promising child is returned to be rolled out."""
+        expanding_node = path[-1]
+        if expanding_node.is_terminal:
+            return path
+        else:
+            game = expanding_node.game_state
+            for action in game.all_legal_actions:
+                child_node = tree.get_node(game.transition(action))
+                expanding_node.child_to_edge_visits[child_node] = 1
+                if child_node.N == 0:
+                    reward = tree.rollout(child_node)
+                    tree.backprop(path + [child_node], reward)
+            expanding_node.is_expanded = True
+            return path + [tree.best_child(expanding_node)]
+
+    def rollout(tree, node: MCTSNode) -> float:
         """Estimate the utility of a non-terminal game state.
         Detach game from given MCTSNode, Simluate until end state and return reward"""
         game = node.game_state
@@ -40,84 +65,32 @@ class MCTS:
         reward = game.result
         return reward
 
-    def select_action_according_to_puct(self, node: MCTSNode, c_puct=1.0) -> Any:
-        """Select an action based on the PUCT algorithm."""
-        total_N = node.N
-        actions = node.game_state.all_legal_actions
-
-        best_action = None
-        best_puct = -float('inf')
-
-        for action in actions:
-            if action in node.children_and_edge_visits:
-                child, edge_visits = node.children_and_edge_visits[action]
-                Q_sa = child.Q
-                N_sa = edge_visits
-            else:
-                Q_sa = 0.0  # Unvisited child nodes have Q=0
-                N_sa = 0
-
-            P_sa = 1 / len(actions)  # Uniform prior probability
-
-            puct = Q_sa + c_puct * P_sa * np.sqrt(total_N) / (1 + N_sa)
-            if puct > best_puct:
-                best_puct = puct
-                best_action = action
-
-        return best_action
-
-    def run(tree, node: MCTSNode = None):
+    def backprop(tree, path: list[MCTSNode], reward: int):
+        reward *= -path[-1].game_state.player
+        for node in reversed(path):
+            node.N = 1 + sum(node.child_to_edge_visits.values())
+            node.Q = (1/node.N)*(reward + sum(child.Q * edge_visits for (child, edge_visits) in node.child_to_edge_visits.items()))
+            reward = -reward
+            node.results[reward] += 1
+        
+    def run(tree):
         """Perform one playout from the given node."""
-        if node is None:
-            node = tree.root
-
-        if node.is_terminal:
-            node.U = node.game_state.result
-            node.results[node.U] += 1
-        elif node.N == 0:  # New node not yet visited
-            node.U = tree.rollout(node)
-            node.results[node.U] += 1
-        else:
-            action = tree.select_action_according_to_puct(node)
-            if action not in node.children_and_edge_visits:
-                new_game_state = node.game_state.transition(action)
-                new_game_state_hash = tree.hash_game_state(new_game_state)
-                if new_game_state_hash in tree.nodes_by_hash:
-                    child = tree.nodes_by_hash[new_game_state_hash]
-                    node.children_and_edge_visits[action] = (child, 0)
-                else:
-                    new_node = MCTSNode(game_state=new_game_state)
-                    node.children_and_edge_visits[action] = (new_node, 0)
-                    tree.nodes_by_hash[new_game_state_hash] = new_node
-                child, edge_visits = node.children_and_edge_visits[action]
-            else:
-                child, edge_visits = node.children_and_edge_visits[action]
-
-            tree.run(child)
-            child, edge_visits = node.children_and_edge_visits[action]
-            node.children_and_edge_visits[action] = (child, edge_visits + 1)
-
-            # Aggregate results from the child node
-            for result_key in node.results:
-                node.results[result_key] += child.results.get(result_key, 0)
-
-        # Update the node's statistics
-        children_and_edge_visits = node.children_and_edge_visits.values()
-        total_edge_visits = sum(edge_visits for (_, edge_visits) in children_and_edge_visits)
-        node.N = 1 + total_edge_visits
-        node.Q = (1 / node.N) * (
-            node.U +
-            sum(child.Q * edge_visits for (child, edge_visits) in children_and_edge_visits)
-        )
-
-    def search(self, n: int):
-        """Perform n playouts from the root node."""
-        print("doing a search in updated alg")
-        for i in range(n):
-            self.run()
+        path = tree.select()
+        path = tree.expand(path)
+        reward = tree.rollout(path[-1])
+        tree.backprop(path, reward)
     
+    
+    def PUCT(tree, parent, node, c_puct=1.):
+        #P_sa = len(parent.child_to_edge_visits)
+        N_sa = parent.child_to_edge_visits[node]
+        return node.Q + c_puct * 1 * np.sqrt(parent.N) / (1 + N_sa)
 
-GameState = Any
+    def search(tree, n: int):
+        """Perform n playouts from the root node."""
+        for _ in range(n):
+            tree.run()
+
 class MCTSNode2:
     def __init__(node, game_state: GameState):
         node.game_state: GameState = game_state # game state that this node is derived from
