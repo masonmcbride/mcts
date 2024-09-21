@@ -66,6 +66,8 @@ class MCTS:
         return reward
 
     def backprop(tree, path: list[MCTSNode], reward: int):
+        print(f"sending {reward=} to game_state with player {path[-1].game_state.player}")
+        print(path[-1].game_state)
         reward *= -path[-1].game_state.player
         for node in reversed(path):
             node.N = 1 + sum(node.child_to_edge_visits.values())

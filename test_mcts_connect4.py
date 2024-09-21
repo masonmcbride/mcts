@@ -57,7 +57,7 @@ def test_mcts_blocks_win():
         [0., 0., -1, 1, -1, 0., 0.]])
     print("MCTS")
     mcts = MCTS(game_state=O_can_win)
-    mcts.search(50) 
+    mcts.search(1000) 
     chosen_move = max([child for child 
                         in mcts.root.child_to_edge_visits.keys()],
                         key=lambda child: child.Q)
