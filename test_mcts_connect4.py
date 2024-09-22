@@ -20,9 +20,7 @@ def test_mcts_chooses_winning_move():
         [0., 0., 0., 1., 0., 0., 0.],
         [0., 0., -1, 1., 0., 0., 0.],
         [0., 0., -1, 1, -1, 0., 0.]])
-    winning_move = max([child for child 
-                        in mcts.root.child_to_edge_visits.keys()],
-                        key=lambda child: child.Q)
+    winning_move = max(mcts.root.children, key=lambda child: child.Q)
     assert np.array_equal(winning_move.game_state.state, answer) 
 
 def test_mcts_results_contain_no_losses():
@@ -58,11 +56,7 @@ def test_mcts_blocks_win():
     print("MCTS")
     mcts = MCTS(game_state=O_can_win)
     mcts.search(50) 
-    chosen_move = max([child for child 
-                        in mcts.root.child_to_edge_visits.keys()],
-                        key=lambda child: child.Q)
-    print([child.Q for child in mcts.root.child_to_edge_visits.keys()])
-    print(chosen_move.game_state)
+    chosen_move = max(mcts.root.children, key=lambda child: child.Q)
     assert np.array_equal(chosen_move.game_state.state, blocked)
 
 def test_one_run_expands_and_selects_one():

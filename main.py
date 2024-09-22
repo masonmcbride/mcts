@@ -4,7 +4,7 @@ import io
 import numpy as np
 #from visualize import visualize_tree
 from connect4 import Connect4
-from mcts import MCTS
+from mcgs import MCGS
 
 profiler = cProfile.Profile()
 
@@ -23,8 +23,8 @@ board = np.array([
         [0., 0., -1., 1., 0., 0., 0.],
         [0., 0., -1, 1., 1., 0., 0.],
         [0., 0., -1, 1, -1, 0., 0.]])
-win_or_draw = Connect4.get_state(state=cant_lose)
-mcts = MCTS(game_state=win_or_draw)
+win_or_draw = Connect4.get_state(state=board)
+mcts = MCGS(game_state=win_or_draw)
 
 profiler.enable()
 

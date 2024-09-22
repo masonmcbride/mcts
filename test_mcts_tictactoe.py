@@ -10,9 +10,7 @@ def test_mcts_picks_winning_move_when_almost_won():
     almost_won = TicTacToe.get_state(state=one_move_to_win)
     mcts = MCTS(game_state=almost_won)
     mcts.search(50) 
-    winning_move = max([child for child 
-                        in mcts.root.child_to_edge_visits.keys()],
-                        key=lambda child: child.Q)
+    winning_move = max(mcts.root.children, key=lambda child: child.Q)
     assert winning_move.game_state.state[2,2] == 1
 
 def test_mcts_results_contain_no_losses():
@@ -37,9 +35,7 @@ def test_mcts_blocks_win():
         [0,0,1]])
     mcts = MCTS(game_state=O_can_win)
     mcts.search(50) 
-    chosen_move = max([child for child 
-                        in mcts.root.child_to_edge_visits.keys()],
-                        key=lambda child: child.Q)
+    chosen_move = max(mcts.root.children, key=lambda child: child.Q)
     assert np.array_equal(chosen_move.game_state.state, blocked)
 
 def test_one_run_expands_and_selects_one():
