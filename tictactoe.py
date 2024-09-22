@@ -39,7 +39,7 @@ class TicTacToeState:
         player_one_wins |= (diag_sum_tr == three_in_a_row)
 
         if player_one_wins:
-            return 1
+            return {1:1, -1:-1}
 
         player_two_wins = any(rowsum == -three_in_a_row)
         player_two_wins |= any(colsum == -three_in_a_row)
@@ -47,10 +47,10 @@ class TicTacToeState:
         player_two_wins |= (diag_sum_tr == -three_in_a_row)
 
         if player_two_wins:
-            return -1
+            return {1:-1, -1:1}
 
         if np.all(board != 0):
-            return 0
+            return {1:0, -1:0}
 
         return None
     

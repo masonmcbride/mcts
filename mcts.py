@@ -55,7 +55,7 @@ class MCTS:
             expanding_node.is_expanded = True
             return path + [tree.best_child(expanding_node)]
 
-    def rollout(tree, node: MCTSNode) -> float:
+    def rollout(tree, node: MCTSNode) -> dict:
         """Estimate the utility of a non-terminal game state.
         Detach game from given MCTSNode, Simluate until end state and return reward"""
         game = node.game_state
@@ -63,17 +63,21 @@ class MCTS:
             action = random.choice(game.all_legal_actions)
             game = game.transition(action)
         reward = game.result
+        # when you get a reward, how do you know it is a positive signal or a negative signal
         return reward
 
     def backprop(tree, path: list[MCTSNode], reward: int):
-        print(f"sending {reward=} to game_state with player {path[-1].game_state.player}")
+        print(f"player {path[-1].game_state.player} rolled out from game_state")
         print(path[-1].game_state)
-        reward *= -path[-1].game_state.player
+        print(f"got reward {reward}")
+        reward = reward[path[-1].game_state.player]
+        print(f"got reward {reward}")
+        # I want reward to be positive if the reward is a win for my player and negative is the reward is a loss for my player
         for node in reversed(path):
             node.N = 1 + sum(node.child_to_edge_visits.values())
-            node.Q = (1/node.N)*(reward + sum(child.Q * edge_visits for (child, edge_visits) in node.child_to_edge_visits.items()))
-            reward = -reward
+            node.Q = -(1/node.N)*(reward + sum(child.Q * edge_visits for (child, edge_visits) in node.child_to_edge_visits.items()))
             node.results[reward] += 1
+            reward = -reward
         
     def run(tree):
         """Perform one playout from the given node."""
@@ -81,7 +85,6 @@ class MCTS:
         path = tree.expand(path)
         reward = tree.rollout(path[-1])
         tree.backprop(path, reward)
-    
     
     def PUCT(tree, parent, node, c_puct=1.):
         #P_sa = len(parent.child_to_edge_visits)
@@ -160,15 +163,15 @@ class MCTS2:
         reward = game.result
         return reward
 
-    def backprop(tree, path: list[MCTSNode2], value: int) -> None:
+    def backprop(tree, path: list[MCTSNode2], reward: dict) -> None:
         """MCTS Backropagation. 
         The reward from this terminal state must be propagated up stream to update MCTS behavior"""
-        value *= -path[-1].game_state.player
+        value = reward[path[-1].game_state.player]
         for node in reversed(path):
-            node.W += value 
+            node.W -= value 
             node.N += 1
-            value = -value
             node.results[value] += 1
+            value = -value
     
     def UCB(tree, node: MCTSNode2, c_param=2) -> float:
         """Returns (U)pper (C)onfidence (B)ound score for MCTSNode"""

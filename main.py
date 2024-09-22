@@ -23,7 +23,7 @@ board = np.array([
         [0., 0., -1., 1., 0., 0., 0.],
         [0., 0., -1, 1., 1., 0., 0.],
         [0., 0., -1, 1, -1, 0., 0.]])
-win_or_draw = Connect4.get_state(state=board)
+win_or_draw = Connect4.get_state(state=cant_lose)
 mcts = MCTS(game_state=win_or_draw)
 
 profiler.enable()

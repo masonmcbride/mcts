@@ -26,9 +26,9 @@ class Connect4State:
             diag_sums: set[int]  = {view.trace(), view[::-1].trace()}
             all_sums: set[int] = horiz_sums | vert_sums | diag_sums
             
-            if 4 in all_sums:      return 1 # Player 1 wins
-            if -4 in all_sums:     return -1 # Player -1 wins
-            if np.all(game.state): return 0 # Tie 
+            if 4 in all_sums:      return {1:1, -1:-1} # Player 1 wins
+            if -4 in all_sums:     return {1:-1, -1:1} # Player -1 wins
+            if np.all(game.state): return {1:0, -1:0} # Tie 
             else: return None                   # No result
         
         return next((result for result in map(check_4by4,(game.state[i:i+4,j:j+4] 
