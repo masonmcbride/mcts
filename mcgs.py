@@ -14,6 +14,10 @@ class MCGSNode:
         self.child_to_edge_visits: dict[MCGSNode, int] = {}  # child node -> edge visits
         self.results = {1: 0, -1: 0, 0: 0}
 
+    @property
+    def children(self):
+        return self.child_to_edge_visits.keys()
+
 class MCGS:
     def __init__(tree, game_state: GameState):
         tree.root: MCGSNode = MCGSNode(game_state)

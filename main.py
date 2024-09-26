@@ -2,7 +2,8 @@ import cProfile
 import pstats
 import io
 import numpy as np
-#from visualize import visualize_tree
+from visualize import visualize_tree
+from tictactoe import TicTacToe
 from connect4 import Connect4
 from mcgs import MCGS
 
@@ -23,7 +24,11 @@ board = np.array([
         [0., 0., -1., 1., 0., 0., 0.],
         [0., 0., -1, 1., 1., 0., 0.],
         [0., 0., -1, 1, -1, 0., 0.]])
-win_or_draw = Connect4.get_state(state=board)
+board = np.array([
+        [1,-1,0],
+        [1,1,-1],
+        [-1,0,0]])
+win_or_draw = TicTacToe.get_state(state=board)
 mcts = MCGS(game_state=win_or_draw)
 
 profiler.enable()
@@ -47,5 +52,5 @@ for child in mcts.root.child_to_edge_visits.keys():
     print(f"results {child.Q=}")
     print(child.results)
 
-#graph = visualize_tree(mcts.root)
-#graph.render('game_tree', format='png', cleanup=True)
+graph = visualize_tree(mcts.root)
+graph.render('game_tree', format='png', cleanup=True)
