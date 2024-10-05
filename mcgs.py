@@ -5,18 +5,18 @@ import numpy as np
 GameState = Any
 
 class MCGSNode:
-    def __init__(self, game_state: GameState):
-        self.game_state: GameState = game_state  
-        self.is_terminal: bool = game_state.is_terminal
-        self.is_expanded: bool = False
-        self.N: int = 0  # Visit count
-        self.Q: float = 0.0  # Regularized value
-        self.child_to_edge_visits: dict[MCGSNode, int] = {}  # child node -> edge visits
-        self.results = {1: 0, -1: 0, 0: 0}
+    def __init__(node, game_state: GameState):
+        node.game_state: GameState = game_state  
+        node.is_terminal: bool = game_state.is_terminal
+        node.is_expanded: bool = False
+        node.N: int = 0  # Visit count
+        node.Q: float = 0.0  # Regularized value
+        node.child_to_edge_visits: dict[MCGSNode, int] = {}  # child node -> edge visits
+        node.results = {1: 0, -1: 0, 0: 0}
 
     @property
-    def children(self):
-        return self.child_to_edge_visits.keys()
+    def children(node):
+        return node.child_to_edge_visits.keys()
 
 class MCGS:
     def __init__(tree, game_state: GameState):
@@ -30,7 +30,7 @@ class MCGS:
         return tree.nodes[game_state]
 
     def best_child(tree, node: MCGSNode) -> MCGSNode:
-            return max([child for child in node.child_to_edge_visits.keys()], key=lambda x: tree.PUCT(node,x))
+            return max([child for child in node.children], key=lambda x: tree.PUCT(node,x))
 
     def select(tree) -> list[MCGSNode]:
         """MCGS Selection.
